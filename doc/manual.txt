@@ -1,0 +1,52 @@
+﻿Configuração Banco de Dados:
+Inicialmente foi criado um container no docker para o banco de dados postgress, para utiliza-lo seguir os seguintes passos.
+Dentro da pasta "db" rodar os seguintes comandos do docker:
+
+docker image build -t stockdbimage .
+docker container run --name=stockdb -p 5432:5432 stockdbimage
+
+*Caso não queira utilizar o docker e sim uma instalaçãoo já feita será necessário alterar os dados de conexão dentro do arquivo application.properties
+
+Execução da Aplicação:
+ Dentro da pasta raiz da aplicação rodar os seguinte comando: 
+  
+ mvn clean install
+
+ entrar na pasta "target" e rodar o seguinte comando:
+	
+ java -jar DonadelStockExchangeApplication-1.0 DonadelStockExchangeApplication
+
+
+Utilização Básica da Aplicativo: 
+
+ Para inicializar com dados defalt chamar a seguinte URL: 
+   http://localhost:8080/api/default/start
+ 
+ Para adicionar uma nova conta: 
+   http://localhost:8080/api/account/new?name=NOME_DA_CONTA&initialBalance=VALOR_SALDO_INICIAL
+
+ Para visualizar uma conta:
+   http://localhost:8080/api/account/get?accountName=NOME_DA_CONTA	
+
+ Para Adicionar um novo monitoramento:
+    http://localhost:8080/api/stock/createMonitor?accountName=NOME_DA_CONTA&stockName=NOME_DA_ACAOX&buy=VALOR_COMPRA&sell=VALOR_VENDA&balance=VALOR_DISPONIVEL_NEGOCIACAO
+
+ Para Imprimir o status atual das ações monitoradas:
+    http://localhost:8080/api/stock/monitorStatus?accountName=NOME_DA_CONTA
+
+ Para Gerar um relatorio da Conta (um arquivo será gerado dentro da pasta "reports" da pasta onde a aplicação está rodando):
+    http://localhost:8080/api/transaction/report?accountName=NOME_DA_CONTA  
+
+ Para Gerar um relatorio de uma Ação de uma Conta (um arquivo será gerado dentro da pasta "reports" da pasta onde a aplicação está rodando):
+    http://localhost:8080/api/transaction/report?accountName=NOME_DA_CONTA&stockName=NOME_DA_ACAO  
+
+Outras funcionalidades:
+  Para adicionar mais saldo a conta: 
+    http://localhost:8080/api/account/addBalance?accountName=NOME_DA_CONTA&value=VALOR_A_SER_ADICIONADO
+
+  Para "sacar" um valor da conta:
+    http://localhost:8080/api/account/withdrawBalance?accountName=NOME_DA_CONTA&value=VALOR_A_SER_SACADO
+ 
+  Parar de monitorar uma ação:
+    http://localhost:8080/api/stock/stopMonitoring?accountName=NOME_DA_CONTA&stockName=NOME_DA_ACAO
+ 

@@ -1,0 +1,34 @@
+Arquitetura:
+
+  A aplicação foi desenvolvida com SpringBoot e estruturada em 3 pilares: Contas (Account), Ações (StockMonitor), e Transações (Transaction), cada um destes pilares conta com um
+  @Repository e @Service próprios que conversam entre si. 
+
+  O pilar de Contas é responsável pelo controle das contas que serão utilizadas, cada conta deve possuir um nome único e um valor de saldo para poder operar as ações.
+  Este saldo pode ser incrementado a partir de um método que coloca "mais dinheiro" na conta, ou pode ser retirado por um método que "saca dinheiro" da conta.
+  Sempre que um novo monitor de ações for criado o valor de "saldo de negociação" da ação será retirado do saldo da conta e quando um monitoramento for encerrado, 
+  o valor disponível no monitor será "transferido" para a conta. 
+
+  O pilar de Ações, é responsável pelo controle das operações de CRUD das ações que estão sendo monitoradas, além de reagir as mudanças de preço das mesmas. 
+  Junto com este pilar foram criados dois serviços adicionais:
+  
+  StockKeeper: Este serviço é responsável por manter em memoria todas as ações que estão sendo monitoradas, para evitar acessos repetidos ao banco de dados. 
+  Sempre que uma nova ação é adiciona ou retirada do monitor este serviço adiciona ou retira ela do seu MAP. Assim os métodos de geração de novos preços e "reação" a mudança de preços (que são métodos que serão rodados a cada 5 segundos) utilizam este serviço para buscar as ações.
+  
+  StockPriceGenerator: Este serviço representaria o mercado de ações, onde a cada 5 segundos um Schedule roda para gerar novamente todos os preços das ações monitoradas.
+  Ao final da geração ele envia via JMS uma mensagem avisando que o processo acabou. Esta mensagem será tratada no serviço do StockMonitor para assim reagir as mudanças e realizar as operações de compra e venda. 
+  Decidi por usar esta estrutura pôr para dar uma ideia de "desacoplamento" e evitar uma referência cíclica entre o serviço de geração de preços e o serviço que trata estas mudanças.
+  Outro ponto importante no serviço de Ações é a possibilidade de "parar" com um monitoramento.
+  Quando está opção for utilizada caso a ação em questão tenha alguma quantidade de ações não vendidas o sistema irá vender todas pelo preço atual independentemente do valor, e irá transferir o saldo novamente para conta.
+	
+  O último pilar de Transações é relativamente simples. Sempre que uma operação de compra/venda for realizada este serviço é chamado para registrar esta operação. 
+  Além disso o serviço possui dois outros métodos de geração de relatório um por conta, e um por conta+ação. Ambos os relatórios serão salvos em um arquivo externo.
+
+  Outro ponto que vale ressaltar como o sistema não possui uma ideia de "login" todos os métodos chamados via rest pedem o nome da conta, para que o sistema entenda onde que as operações devem ser feitas.    
+
+  A parte de banco bancos de dados foi toda feita com JPA para facilitar a criação/manipulação dos dados sem necessidade de ficar escrevendo muitos comandos SQL.
+  A utilização do docker para o servidor de banco de dados, foi feita pois não tinha nenhum acesso a um ambiente com banco postgres, assim achei mais fácil montar um arquivo docker do que realizar toda a instalação do banco de dados. 
+
+  Os testes foram escritos utilizando JUnit + Mockito, além da compatibilidade com o springboot, pela agilidade na escrita de testes e mocks para conseguir fazer sempre testes unitários isolados.
+  Além do banco embutido H2, para poder realizar os testes de repositórios sem a necessidade de se conectar em uma base instalada, deixando assim os testes independentes de qualquer configuração externa.
+
+  Para JMS foi utilizado o ActiveMQ, pela fácil integração com o springboot.
