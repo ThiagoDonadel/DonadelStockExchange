@@ -14,7 +14,7 @@ Execução da Aplicação:
 
  entrar na pasta "target" e rodar o seguinte comando:
 	
- java -jar DonadelStockExchangeApplication-1.0 DonadelStockExchangeApplication
+ java -jar DonadelStockExchange-1.0.jar DonadelStockExchangeApplication
 
 
 Utilização Básica da Aplicativo: 
